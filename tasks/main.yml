@@ -29,17 +29,17 @@
   notify: Restart apache
 
 - name: Enable apache mods
-  ansible.builtin.apache2_module:
+  community.general.apache2_module:
     state: present
     name: "{{ item }}"
-  with_items: "{{ apache_mods_enabled }}"
+  loop: "{{ apache_mods_enabled }}"
   notify: Restart apache
 
 - name: Disable apache mods
-  ansible.builtin.apache2_module:
+  community.general.apache2_module:
     state: absent
     name: "{{ item }}"
-  with_items: "{{ apache_mods_disabled }}"
+  loop: "{{ apache_mods_disabled }}"
   notify: Restart apache
 
 - name: Add vhosts

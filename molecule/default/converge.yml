@@ -35,4 +35,4 @@
               allow from all
 
   roles:
-    - role: supertarto.apache
+    - role: .
