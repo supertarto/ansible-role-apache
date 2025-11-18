@@ -1,0 +1,8 @@
+---
+apache_security_configuration_items:
+  - regexp: "^ServerTokens "
+    line: "ServerTokens {{ apache_server_token }}"
+  - regexp: "^ServerSignature "
+    line: "ServerSignature {{ apache_server_signature }}"
+  - regexp: "^TraceEnable "
+    line: "TraceEnable {{ apache_trace_enabled }}"

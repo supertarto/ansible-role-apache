@@ -1,35 +1,56 @@
 ---
 apache_service: apache2
 apache_server_conf: /etc/apache2
-apache_listen_port: 80
-apache_packages:
-  - apache2
-  - apache2-utils
-
-apache_ports_configuration_items:
-  - regexp: "^Listen "
-    line: "Listen {{ apache_listen_port }}"
 
 apache_server_token: Prod
 apache_server_signature: "Off"
 apache_trace_enabled: "Off"
 
-apache_security_configuration_items:
-  - regexp: "^ServerTokens "
-    line: "ServerTokens {{ apache_server_token }}"
-  - regexp: "^ServerSignature "
-    line: "ServerSignature {{ apache_server_signature }}"
-  - regexp: "^TraceEnable "
-    line: "TraceEnable {{ apache_trace_enabled }}"
+apache_default_allow_override: "None"
+apache_default_options: "None"
+apache_default_require: "all granted"
 
 apache_mods_enabled: []
 apache_mods_disabled: []
 
-apache_create_vhosts: true
-apache_vhosts_filename: "my-vhosts.conf"
+apache_added_vhosts_filename: "my-vhosts.conf"
 
-apache_remove_default_vhost: true
-apache_default_vhost_filename:
-  - 000-default.conf
+apache_removed_vhost_filename: []
+#  - "000-default.conf"
 
 apache_vhost_config: []
+  #  Example
+  # - listen_ip: "*"
+  #   listen_port: "443"
+  #   server_name: "mysite.exemple.com"
+  #   server_alias: "myalias"
+  #   server_admin: "admin@exemple.com"
+  #   document_root: "/var/www/exemple"
+  #   ssl_engine: "on"
+  #   ssl_protocol: "-all +TLSv1.3"
+  #   ssl_certificate_file: "/path/to/my/cert.pem"
+  #   ssl_certificate_key_file: "/path/to/my/cert.key"
+  #   ssl_certificate_chain_file: "/path/to/my/cert.chain"
+  #   log_level: "warn"
+  #   log_format: "your custom log format"
+  #   error_log_param: "${APACHE_LOG_DIR}/error.log"
+  #   custom_log_param: "${APACHE_LOG_DIR}/access.log combined"
+  #   general_extra_parameters: |
+  #       every other useful parameter in your general conf (ProxyRequest, ProxyPreserve etc)
+  #   directory:
+  #      - path: "/var/www/exemple"
+  #        allow_override: "All"
+  #        options: "None"
+  #        require: "all granted"
+  #        extra_parameters: |
+  #           every other useful parameter in your directory conf
+  #   location:
+  #      - path: "/location/path/exemple"
+  #        options: "None"
+  #        require: "all granted"
+  #        extra_parameters: |
+  #           every other useful parameter in your location conf
+  #   file:
+  #      - path: "/path/to/my/file"
+  #        extra_parameters: |
+  #           every other useful parameter in your file conf

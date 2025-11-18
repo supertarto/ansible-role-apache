@@ -22,17 +22,13 @@
         server_name: host1
         serveralias: alias1
         documentroot: "/var/www/html"
-        serveradmin: admin@localhost
+        serveradmin: "admin@localhost"
         custom_param: |
-          ErrorLog ${APACHE_LOG_DIR}/error.log
-          CustomLog ${APACHE_LOG_DIR}/access.log combined
-          LogLevel warn
+        error_log_param: ${APACHE_LOG_DIR}/error.log
+        custom_log_param: ${APACHE_LOG_DIR}/access.log combined"
+        log_level: "warn"
         directory:
           - path: "/var/www/html"
-            config: |
-              AllowOverride All
-              Order deny,allow
-              allow from all
 
   roles:
     - role: .

@@ -4,20 +4,13 @@
     update_cache: true
     cache_valid_time: 3600
 
-- name: Install apache packages (Debian)
+- name: Install apache packages
   ansible.builtin.package:
-    name: "{{ apache_packages }}"
+    name:
+      - apache2
+      - apache2-utils
     state: present
   notify: Start apache on boot
-
-- name: Set Apache port
-  ansible.builtin.lineinfile:
-    dest: "{{ apache_server_conf }}/ports.conf"
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items: "{{ apache_ports_configuration_items }}"
-  notify: Restart apache
 
 - name: Update security.conf
   ansible.builtin.lineinfile:
@@ -42,6 +35,14 @@
   loop: "{{ apache_mods_disabled }}"
   notify: Restart apache
 
+- name: Delete vhosts symlink in site-enabled
+  ansible.builtin.file:
+    path: "{{ apache_server_conf }}/sites-enabled/{{ item }}"
+    state: absent
+  with_items: "{{ apache_removed_vhost_filename }}"
+  notify: Restart apache
+  when: apache_removed_vhost_filename
+
 - name: Add vhosts
   ansible.builtin.template:
     src: "vhosts.conf.j2"
@@ -52,15 +53,7 @@
   notify: Restart apache
   when: apache_create_vhosts
 
-- name: Delete default vhosts in site-enabled
-  ansible.builtin.file:
-    path: "{{ apache_server_conf }}/sites-enabled/{{ item }}"
-    state: absent
-  with_items: "{{ apache_default_vhost_filename }}"
-  notify: Restart apache
-  when: apache_remove_default_vhost
-
-- name: Vhost symlink in site-enabled
+- name: Add vhost symlink in site-enabled
   ansible.builtin.file:
     src: "{{ apache_server_conf }}/sites-available/{{ apache_vhosts_filename }}"
     dest: "{{ apache_server_conf }}/sites-enabled/{{ apache_vhosts_filename }}"
