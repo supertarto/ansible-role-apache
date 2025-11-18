@@ -1,0 +1,72 @@
+---
+- name: Verify Apache configuration and vhosts
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    # Check that vhost files exist in sites-available
+    - name: Ensure vhost files exist
+      ansible.builtin.stat:
+        path: "{{ apache_server_conf }}/sites-available/{{ item.name }}"
+      loop: "{{ apache_vhost_to_add }}"
+      register: vhost_files
+
+    - name: Assert all vhost files exist
+      ansible.builtin.assert:
+        that:
+          - vhost_files.results | map(attribute='stat.exists') | min
+        fail_msg: "One or more vhost files are missing in sites-available."
+
+    # Check that symlinks exist in sites-enabled
+    - name: Ensure vhost symlinks exist
+      ansible.builtin.stat:
+        path: "{{ apache_server_conf }}/sites-enabled/{{ item }}"
+      loop: "{{ apache_vhost_to_enable }}"
+      register: vhost_symlinks
+
+    - name: Assert all vhost symlinks exist
+      ansible.builtin.assert:
+        that:
+          - vhost_symlinks.results | map(attribute='stat.islnk') | min
+        fail_msg: "One or more symlinks are missing in sites-enabled."
+
+    # 3. Check ServerName in each file
+    - name: Validate vhost content for ServerName
+      ansible.builtin.command: "grep -q 'ServerName {{ vhost.configs[0].server_name }}' {{ apache_server_conf }}/sites-available/{{ vhost.name }}"
+      loop: "{{ apache_vhost_to_add }}"
+      loop_control:
+        loop_var: vhost
+      changed_when: false
+
+    # Validate Apache configuration syntax
+    - name: Validate Apache configuration syntax
+      ansible.builtin.command: apachectl configtest
+      changed_when: false
+
+    # Check Apache service status
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Assert Apache service is running
+      ansible.builtin.assert:
+        that:
+          - "'{{ apache_service }}' in services"
+          - "services[apache_service].state == 'running'"
+        fail_msg: "Apache service is not running."
+
+    # Test HTTP response
+    - name: Test HTTP response on port 80
+      ansible.builtin.uri:
+        url: "http://localhost"
+        status_code: 200
+        return_content: false
+
+    # Test HTTPS response
+    - name: Test HTTPS response on port 443
+      ansible.builtin.uri:
+        url: "https://localhost"
+        status_code: 200
+        validate_certs: false
+        return_content: false
+      when: apache_vhost_to_add | selectattr('configs', 'defined') | selectattr('configs', 'selectattr', 'listen_port', 'equalto', '443') | list | length > 0
