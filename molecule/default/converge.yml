@@ -4,84 +4,31 @@
   become: true
 
   pre_tasks:
-    - name: Update apt cache
+    - name: Update apt cache.
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 600
       when: ansible_os_family == 'Debian'
       changed_when: false
 
-    - name: Install SSL module dependencies
-      ansible.builtin.apt:
-        name:
-          - openssl
-        state: present
-      when: ansible_os_family == 'Debian'
-
   vars:
     apache_mods_enabled:
-      - ssl
-
-    apache_vhost_to_add:
-      - name: "mysite_1.conf"
-        configs:
-          - listen_ip: "*"
-            listen_port: "80"
-            server_name: "mysite_1.example.com"
-            document_root: "/var/www/mysite_1"
-            error_log_param: "${APACHE_LOG_DIR}/mysite_1_error.log"
-            custom_log_param: "${APACHE_LOG_DIR}/mysite_1_access.log combined"
-            directory:
-              - path: "/var/www/mysite_1"
-                allow_override: "All"
-                options: "None"
-                require: "all granted"
-
-      - name: "mysite_2.conf"
-        configs:
-          - listen_ip: "*"
-            listen_port: "443"
-            server_name: "mysite_2.example.com"
-            server_alias: "alias2"
-            document_root: "/var/www/mysite_2"
-            ssl_engine: "on"
-            ssl_protocol: "-all +TLSv1.3"
-            ssl_certificate_file: "/etc/ssl/certs/ssl-cert-snakeoil.pem"
-            ssl_certificate_key_file: "/etc/ssl/private/ssl-cert-snakeoil.key"
-            error_log_param: "${APACHE_LOG_DIR}/mysite_2_error.log"
-            custom_log_param: "${APACHE_LOG_DIR}/mysite_2_access.log combined"
-            directory:
-              - path: "/var/www/mysite_2"
-                allow_override: "All"
-                options: "None"
-                require: "all granted"
-
-    apache_vhost_to_enable:
-      - "mysite_1.conf"
-      - "mysite_2.conf"
-
-  tasks:
-    - name: Create document roots
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        owner: www-data
-        group: www-data
-        mode: "0755"
-      loop:
-        - "/var/www/mysite_1"
-        - "/var/www/mysite_2"
-
-    - name: Create index.html for each site
-      ansible.builtin.copy:
-        dest: "{{ item }}/index.html"
-        content: "<h1>Welcome to {{ item }}</h1>"
-        owner: www-data
-        group: www-data
-        mode: "0644"
-      loop:
-        - "/var/www/mysite_1"
-        - "/var/www/mysite_2"
+      - "ssl"
+    apache_create_vhosts: true
+    apache_vhosts_filename: "mysite.conf"
+    apache_vhost_config:
+      - listen_ip: "*"
+        listen_port: 80
+        server_name: host1
+        serveralias: alias1
+        documentroot: "/var/www/html"
+        serveradmin: "admin@localhost"
+        custom_param: |
+        error_log_param: ${APACHE_LOG_DIR}/error.log
+        custom_log_param: ${APACHE_LOG_DIR}/access.log combined"
+        log_level: "warn"
+        directory:
+          - path: "/var/www/html"
 
   roles:
     - role: .
