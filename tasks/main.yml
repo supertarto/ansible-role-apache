@@ -1,62 +1,12 @@
 ---
-- name: Update apt cache.
-  ansible.builtin.apt:
-    update_cache: true
-    cache_valid_time: 3600
+- name: Include install tasks
+  ansible.builtin.include_tasks: install.yml
 
-- name: Install apache packages
-  ansible.builtin.package:
-    name:
-      - apache2
-      - apache2-utils
-    state: present
-  notify: Start apache on boot
+- name: Include security tasks
+  ansible.builtin.include_tasks: security.yml
 
-- name: Update security.conf
-  ansible.builtin.lineinfile:
-    dest: "{{ apache_server_conf }}/conf-available/security.conf"
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items: "{{ apache_security_configuration_items }}"
-  notify: Restart apache
+- name: Include modules tasks
+  ansible.builtin.include_tasks: modules.yml
 
-- name: Enable apache mods
-  community.general.apache2_module:
-    state: present
-    name: "{{ item }}"
-  loop: "{{ apache_mods_enabled }}"
-  notify: Restart apache
-
-- name: Disable apache mods
-  community.general.apache2_module:
-    state: absent
-    name: "{{ item }}"
-  loop: "{{ apache_mods_disabled }}"
-  notify: Restart apache
-
-- name: Delete vhosts symlink in site-enabled
-  ansible.builtin.file:
-    path: "{{ apache_server_conf }}/sites-enabled/{{ item }}"
-    state: absent
-  with_items: "{{ apache_removed_vhost_filename }}"
-  notify: Restart apache
-  when: apache_removed_vhost_filename
-
-- name: Add vhosts
-  ansible.builtin.template:
-    src: "vhosts.conf.j2"
-    dest: "{{ apache_server_conf }}/sites-available/{{ apache_vhosts_filename }}"
-    owner: root
-    group: root
-    mode: "0644"
-  notify: Restart apache
-  when: apache_create_vhosts
-
-- name: Add vhost symlink in site-enabled
-  ansible.builtin.file:
-    src: "{{ apache_server_conf }}/sites-available/{{ apache_vhosts_filename }}"
-    dest: "{{ apache_server_conf }}/sites-enabled/{{ apache_vhosts_filename }}"
-    state: link
-  notify: Restart apache
-  when: apache_create_vhosts
+- name: Include vhosts tasks
+  ansible.builtin.include_tasks: vhosts.yml

@@ -1,4 +1,4 @@
-{% for vhost in apache_vhost_config%}
+{% for vhost in item.configs%}
 <VirtualHost {{ vhost.listen_ip }}:{{ vhost.listen_port }}>
 
     ServerName  {{ vhost.server_name }}

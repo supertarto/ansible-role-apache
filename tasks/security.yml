@@ -1,0 +1,9 @@
+---
+- name: Update security.conf
+  ansible.builtin.lineinfile:
+    dest: "{{ apache_server_conf }}/conf-available/security.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items: "{{ apache_security_configuration_items }}"
+  notify: Validate apache config

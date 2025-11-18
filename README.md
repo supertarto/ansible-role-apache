@@ -1,7 +1,7 @@
 # Ansible role apache
 [![CI](https://github.com/supertarto/ansible-role-apache/actions/workflows/ci.yml/badge.svg)](https://github.com/supertarto/ansible-role-apache/actions/workflows/ci.yml)
 
-Install and configure apache with Ansible on Debian.
+Install and configure apache with Ansible on Debian. For apache 2.4
 
 ## Requirements
 None
@@ -12,22 +12,11 @@ None
 
 ## Role variables
 
-The apache service, the apache conf path and packages to install.
+The apache service, the apache conf path
 ```yml
 apache_service: apache2
 apache_server_conf: /etc/apache2
 
-apache_packages:
-  - apache2
-  - apache2-utils
-```
-
-Ports configuration, to be loaded in ports.conf
-```yml
-apache_listen_port: 80
-apache_ports_configuration_items:
-  - regexp: "^Listen "
-    line: "Listen {{ apache_listen_port }}"
 ```
 
 Modifications in security.conf, for production purpose.
@@ -35,13 +24,6 @@ Modifications in security.conf, for production purpose.
 apache_server_token: Prod
 apache_server_signature: "Off"
 apache_trace_enabled: "Off"
-apache_security_configuration_items:
-  - regexp: "^ServerTokens "
-    line: "ServerTokens {{ apache_server_token }}"
-  - regexp: "^ServerSignature "
-    line: "ServerSignature {{ apache_server_signature }}"
-  - regexp: "^TraceEnable "
-    line: "TraceEnable {{ apache_trace_enabled }}"
 ```
 
 A list of mod to enable and a list of mode to disable. Default value is "empty".
@@ -50,68 +32,71 @@ apache_mods_enabled: []
 apache_mods_disabled: []
 ```
 
-Do you want to create a new vhosts file? If set to true, how will the conf file be called?
+A list of vhost to enable, a list of vhost to definitively remove, a list of vhost de disable. 
 ```yml
-apache_create_vhosts: true
-apache_vhosts_filename: "my-vhosts.conf"
+apache_vhost_to_enable: []
+#  - "my-vhosts.conf"
+
+apache_vhost_to_remove: []
+#  - "000-default.conf"
+
+apache_vhost_to_disable: []
+#  - "000-default.conf"
 ```
 
-Do you need to remove the default hosts? If set to true, wich conf file need to be deleted? It can also be use to remove custom vhosts.
-```yml
-apache_remove_default_vhost: true
-apache_default_vhost_filename:
- - 000-default.conf
-```
+**apache_vhost_to_add** is used to add and configure your virtualhost. You can have multiple vhosts. If you don't want to set a specific parameter, dont use it. For exemple, if you don't want to define a server_alias, or if you don't need a "location", remove those lines from the exemple
+For instructions that are not defined in those predefined param, you can use **general_extra_parameters** or (**extra_parameters** in directory, location or file)
+and write directly your instructions (ProxyPass, ProxyRevers etc) Don't forger the leadin "|" - see example below.
 
-**apache_vhost_config** is used to configure your virtualhost. You can have multiple vhosts. If you don't want to set a specific parameter, just delete it. For exemple, if you don't want to define a serveralias, or if you don't need a "location", remove those lines.
-
-Other variables are meant to be multilined: **apache_vhost_config.custom_param**, **apache_vhost_config.directory.config**, **apache_vhost_config.location.config**, **apache_vhost_config.file.config**. Don't forger the leadin "|".
-You can see here an exemple. By default, **apache_vhost_config** is empty. you **MUST** define it yourself, to suits your needs.
+By default, **apache_vhost_to_add** is empty. you **MUST** define it yourself, to suits your needs.
 ```yml
-apache_vhost_config:
-  - listen_ip: "*"
-    listen_port: 80
-    server_name: host1
-    custom_param: |
-        Redirect / https://host1
-    
-  - listen_ip: "*"
-    listen_port: 443
-    server_name: host1
-    serveralias: alias1
-    documentroot: "/var/www/html"
-    serveradmin: admin@localhost
-    custom_param: |
-      ProxyRequests Off
-      ProxyPreserveHost On
-      ErrorLog ${APACHE_LOG_DIR}/error.log
-      CustomLog ${APACHE_LOG_DIR}/access.log combined
-      LogLevel warn
-    ssl_engine: "on"
-    ssl_certificate_file: /etc/ssl/certs/certif.crt
-    ssl_certificate_key_file: /etc/ssl/private/certif.key
-    ssl_certificate_chain_file: /etc/ssl/certs/chain
-    directory:
-      - path: "/var/www/html"
-        config: |
-          AllowOverride All
-          Order deny,allow
-          allow from all
-      - path: "/usr/lib/cgi-bin"
-        config: |
-          SSLOptions +StdEnvVars
-    location:
-      - path: "/"
-        config: |
-          Options -Indexes
-          Options -Includes
-          Options -FollowSymLinks
-          ProxyPass http://localhost:8080/ min=0 max=100 smax=50 ttl=10
-          ProxyPassReverse http://localhost/
-    file:
-      - path: '\.(cgi|shtml|phtml|php)$'
-        config: |
-          SSLOptions +StdEnvVars
+apache_vhost_to_add: []
+#  - name: "my-vhosts_1.conf"
+#    configs:
+    # - listen_ip: "*"
+    #   listen_port: "80"
+    #   server_name: "mysite_1.exemple.com"
+
+#  - name: "my-vhosts_2.conf"
+#    configs:
+    # - listen_ip: "*"
+    #   listen_port: "80"
+    #   server_name: "mysite_2.exemple.com"
+    #
+    # - listen_ip: "*"
+    #   listen_port: "443"
+    #   server_name: "mysite_2.exemple.com"
+    #   server_alias: "myalias"
+    #   server_admin: "admin@exemple.com"
+    #   document_root: "/var/www/exemple"
+    #   ssl_engine: "on"
+    #   ssl_protocol: "-all +TLSv1.3"
+    #   ssl_certificate_file: "/path/to/my/cert.pem"
+    #   ssl_certificate_key_file: "/path/to/my/cert.key"
+    #   ssl_certificate_chain_file: "/path/to/my/cert.chain"
+    #   log_level: "warn"
+    #   log_format: "your custom log format"
+    #   error_log_param: "${APACHE_LOG_DIR}/error.log"
+    #   custom_log_param: "${APACHE_LOG_DIR}/access.log combined"
+    #   general_extra_parameters: |
+    #       every other useful parameter in your general conf (ProxyRequest, ProxyPreserve etc)
+    #   directory:
+    #      - path: "/var/www/exemple"
+    #        allow_override: "All"
+    #        options: "None"
+    #        require: "all granted"
+    #        extra_parameters: |
+    #           every other useful parameter in your directory conf
+    #   location:
+    #      - path: "/location/path/exemple"
+    #        options: "None"
+    #        require: "all granted"
+    #        extra_parameters: |
+    #           every other useful parameter in your location conf
+    #   file:
+    #      - path: "/path/to/my/file"
+    #        extra_parameters: |
+    #           every other useful parameter in your file conf
 ```
 
 ## License

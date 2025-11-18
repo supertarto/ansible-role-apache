@@ -1,0 +1,14 @@
+---
+- name: Enable apache mods
+  community.general.apache2_module:
+    state: present
+    name: "{{ item }}"
+  loop: "{{ apache_mods_enabled }}"
+  notify: Validate apache config
+
+- name: Disable apache mods
+  community.general.apache2_module:
+    state: absent
+    name: "{{ item }}"
+  loop: "{{ apache_mods_disabled }}"
+  notify: Validate apache config

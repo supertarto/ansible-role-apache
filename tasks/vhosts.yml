@@ -1,0 +1,36 @@
+---
+- name: Disable unwanted vhost
+  ansible.builtin.file:
+    path: "{{ apache_server_conf }}/sites-enabled/{{ item }}"
+    state: absent
+  loop: "{{ apache_vhost_to_disable }}"
+  notify: Validate apache config
+  when: apache_vhost_to_disable
+
+- name: Remove unwanted vhost
+  ansible.builtin.file:
+    path: "{{ apache_server_conf }}/sites-available/{{ item }}"
+    state: absent
+  loop: "{{ apache_vhost_to_remove }}"
+  notify: Validate apache config
+  when: apache_vhost_to_remove
+
+- name: Add selected vhost
+  ansible.builtin.template:
+    src: "vhosts.conf.j2"
+    dest: "{{ apache_server_conf }}/sites-available/{{ item.name }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ apache_vhost_to_add }}"
+  notify: Validate apache config
+  when: apache_vhost_to_add
+
+- name: Enable selected vhost
+  ansible.builtin.file:
+    src: "{{ apache_server_conf }}/sites-available/{{ item }}"
+    dest: "{{ apache_server_conf }}/sites-enabled/{{ item }}"
+    state: link
+  loop: "{{ apache_vhost_to_enable }}"
+  notify: Validate apache config
+  when: (apache_server_conf ~ '/sites-available/' ~ item) is file
