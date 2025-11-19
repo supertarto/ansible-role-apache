@@ -5,7 +5,6 @@
     state: absent
   loop: "{{ apache_vhost_to_disable }}"
   notify: Validate apache config
-  when: apache_vhost_to_disable
 
 - name: Remove unwanted vhost
   ansible.builtin.file:
@@ -13,7 +12,6 @@
     state: absent
   loop: "{{ apache_vhost_to_remove }}"
   notify: Validate apache config
-  when: apache_vhost_to_remove
 
 - name: Add selected vhost
   ansible.builtin.template:
@@ -24,7 +22,6 @@
     mode: "0644"
   loop: "{{ apache_vhost_to_add }}"
   notify: Validate apache config
-  when: apache_vhost_to_add
 
 - name: Enable selected vhost
   ansible.builtin.file:

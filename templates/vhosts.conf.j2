@@ -1,80 +1,75 @@
 {% for vhost in item.configs%}
 <VirtualHost {{ vhost.listen_ip }}:{{ vhost.listen_port }}>
-
-    ServerName  {{ vhost.server_name }}
-    {% if vhost.server_alias is defined %}
-    ServerAlias {{ vhost.server_alias }}
-    {% endif %}
-    {% if vhost.document_root is defined %}
-    DocumentRoot "{{ vhost.document_root }}"
-    {% endif %}
-    {% if vhost.server_admin is defined %}
-    ServerAdmin {{ vhost.server_admin }}
-    {% endif %}
-    {% if vhost.ssl_engine is defined%}
-    SSLEngine {{ vhost.ssl_engine }}
-    {% endif%}
-    {% if vhost.ssl_protocol is defined%}
-    SSLProtocol {{ vhost.ssl_protocol }}
-    {% endif%}
-    {% if vhost.ssl_certificate_file is defined%}
-    SSLCertificateFile {{ vhost.ssl_certificate_file }}
-    {% endif%}
-    {% if vhost.ssl_certificate_key_file is defined%}
-    SSLCertificateKeyFile {{ vhost.ssl_certificate_key_file }}
-    {% endif%}
-    {% if vhost.ssl_certificate_chain_file is defined%}
-    SSLCertificateChainFile {{ vhost.ssl_certificate_chain_file }}
-    {% endif%}
-    {% if vhost.log_level is defined%}
-    LogLevel {{ host.log_level }}
-    {% endif%}
-    {% if vhost.log_format is defined%}
-    LogFormat {{ vhost.log_format }}
-    {% endif%}
-    {% if vhost.error_log_param is defined%}
-    ErrorLog {{ vhost.error_log_param }}
-    {% endif%}
-    {% if vhost.custom_log_param is defined%}
-    CustomLog {{ vhost.custom_log_param }}
-    {% endif%}
-
-
-    {% if vhost.directory is defined %}
-        {% for directory in vhost.directory %}
-        <Directory {{ directory.path }}>
-            AllowOverride {{ directory.allow_override | default(apache_default_allow_override) }}
-            Options {{ directory.options | default(apache_default_options) }}
-            Require {{ directory.require | default(apache_default_require) }}
-            {% if directory.extra_parameters is defined %}
-                {{ directory.extra_parameters| indent(width=6, first=True) }}
-            {% endif %}
-        </Directory>
-        {% endfor %}
-    {% endif %}
-
-    {% if vhost.location is defined %}
-        {% for location in vhost.location %}
-        <Location "{{ location.path }}">
-            Options {{ location.options | default(apache_default_options)}}
-            Require {{ location.require | default(apache_default_require) }}
-            {% if location.extra_parameters is defined %}
-            {{ location.extra_parameters| indent(width=6, first=True) }}
-            {% endif %}
-        </Location>
-        {% endfor %}
-    {% endif %}
-
-    {% if vhost.file is defined %}
-        {% for file in vhost.file %}
-        <FilesMatch "{{ file.path }}">
-        {{ file.extra_parameters| indent(width=6, first=True) }}
-        </FilesMatch>
-        {% endfor %}
-    {% endif %}
-
-    {% if vhost.general_extra_parameters is defined %}
-    {{ vhost.general_extra_parameters | indent(width=2, first=True) }}
-    {% endif %}
+ServerName  {{ vhost.server_name }}
+{% if vhost.server_alias is defined %}
+ServerAlias {{ vhost.server_alias }}
+{% endif %}
+{% if vhost.document_root is defined %}
+DocumentRoot "{{ vhost.document_root }}"
+{% endif %}
+{% if vhost.server_admin is defined %}
+ServerAdmin {{ vhost.server_admin }}
+{% endif %}
+{% if vhost.ssl_engine is defined%}
+SSLEngine {{ vhost.ssl_engine }}
+{% endif%}
+{% if vhost.ssl_protocol is defined%}
+SSLProtocol {{ vhost.ssl_protocol }}
+{% endif%}
+{% if vhost.ssl_certificate_file is defined%}
+SSLCertificateFile {{ vhost.ssl_certificate_file }}
+{% endif%}
+{% if vhost.ssl_certificate_key_file is defined%}
+SSLCertificateKeyFile {{ vhost.ssl_certificate_key_file }}
+{% endif%}
+{% if vhost.ssl_certificate_chain_file is defined%}
+SSLCertificateChainFile {{ vhost.ssl_certificate_chain_file }}
+{% endif%}
+{% if vhost.log_level is defined%}
+LogLevel {{ vhost.log_level }}
+{% endif%}
+{% if vhost.log_format is defined%}
+LogFormat {{ vhost.log_format }}
+{% endif%}
+{% if vhost.error_log_param is defined%}
+ErrorLog {{ vhost.error_log_param }}
+{% endif%}
+{% if vhost.custom_log_param is defined%}
+CustomLog {{ vhost.custom_log_param }}
+{% endif%}
+{% if vhost.directory is defined %}
+{% for directory in vhost.directory %}
+<Directory {{ directory.path }}>
+AllowOverride {{ directory.allow_override | default(apache_default_allow_override) }}
+Options {{ directory.options | default(apache_default_options) }}
+Require {{ directory.require | default(apache_default_require) }}
+{% if directory.extra_parameters is defined %}
+{{ directory.extra_parameters| indent(width=6, first=True) }}
+{% endif %}
+</Directory>
+{% endfor %}
+{% endif %}
+{% if vhost.location is defined %}
+{% for location in vhost.location %}
+<Location "{{ location.path }}">
+Options {{ location.options | default(apache_default_options)}}
+Require {{ location.require | default(apache_default_require) }}
+{% if location.extra_parameters is defined %}
+{{ location.extra_parameters| indent(width=6, first=True) }}
+{% endif %}
+</Location>
+{% endfor %}
+{% endif %}
+{% if vhost.file is defined %}
+{% for file in vhost.file %}
+<FilesMatch "{{ file.path }}">
+{{ file.extra_parameters| indent(width=6, first=True) }}
+</FilesMatch>
+{% endfor %}
+{% endif %}
+{% if vhost.general_extra_parameters is defined %}
+{{ vhost.general_extra_parameters | indent(width=2, first=True) }}
+{% endif %}
 </VirtualHost>
+
 {% endfor %}
