@@ -5,13 +5,6 @@
     state: "started"
     enabled: true
 
-- name: Validate apache config
-  ansible.builtin.command: apachectl configtest
-  register: apache_configtest
-  changed_when: false
-  failed_when: apache_configtest.rc != 0
-  notify: Restart apache
-
 - name: Restart apache
   ansible.builtin.service:
     name: "{{ apache_service }}"

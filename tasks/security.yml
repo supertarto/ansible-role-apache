@@ -6,4 +6,4 @@
     line: "{{ item.line }}"
     state: present
   with_items: "{{ apache_security_configuration_items }}"
-  notify: Validate apache config
+  notify: Restart apache

@@ -4,11 +4,11 @@
     state: present
     name: "{{ item }}"
   loop: "{{ apache_mods_enabled }}"
-  notify: Validate apache config
+  notify: Restart apache
 
 - name: Disable apache mods
   community.general.apache2_module:
     state: absent
     name: "{{ item }}"
   loop: "{{ apache_mods_disabled }}"
-  notify: Validate apache config
+  notify: Restart apache

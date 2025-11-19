@@ -4,14 +4,14 @@
     path: "{{ apache_server_conf }}/sites-enabled/{{ item }}"
     state: absent
   loop: "{{ apache_vhost_to_disable }}"
-  notify: Validate apache config
+  notify: Restart apache
 
 - name: Remove unwanted vhost
   ansible.builtin.file:
     path: "{{ apache_server_conf }}/sites-available/{{ item }}"
     state: absent
   loop: "{{ apache_vhost_to_remove }}"
-  notify: Validate apache config
+  notify: Restart apache
 
 - name: Add selected vhost
   ansible.builtin.template:
@@ -21,7 +21,7 @@
     group: root
     mode: "0644"
   loop: "{{ apache_vhost_to_add }}"
-  notify: Validate apache config
+  notify: Restart apache
 
 - name: Enable selected vhost
   ansible.builtin.file:
@@ -29,5 +29,4 @@
     dest: "{{ apache_server_conf }}/sites-enabled/{{ item }}"
     state: link
   loop: "{{ apache_vhost_to_enable }}"
-  notify: Validate apache config
-  when: (apache_server_conf ~ '/sites-available/' ~ item) is file
+  notify: Restart apache
