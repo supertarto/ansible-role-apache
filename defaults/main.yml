@@ -7,7 +7,7 @@ apache_server_signature: "Off"
 apache_trace_enabled: "Off"
 
 apache_default_allow_override: "None"
-apache_default_options: "None"
+apache_default_options: "FollowSymlinks"
 apache_default_require: "all granted"
 
 apache_mods_enabled: []
